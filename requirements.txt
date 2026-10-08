@@ -1,0 +1,14 @@
+numpy
+scipy
+scikit-learn
+datasketch
+fasttext-wheel
+mwparserfromhell
+pyarrow
+requests
+torch
+transformers>=4.57
+accelerate
+sentencepiece
+huggingface_hub
+safetensors

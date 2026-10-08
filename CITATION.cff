@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use this code or the AINA-KK data, please cite the paper."
+title: "Unchecked or Falsely Accused? Evaluating AI-Generated Text Detectors on Kazakh"
+authors:
+  - family-names: Ozaman
+    given-names: Mansur
+    affiliation: "School of Computing and Artificial Intelligence, Nazarbayev University"
+    email: mansur.ozaman@nu.edu.kz
+year: 2026
+license: MIT

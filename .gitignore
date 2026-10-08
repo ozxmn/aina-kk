@@ -1,0 +1,6 @@
+.env
+data/
+scores/
+results/
+__pycache__/
+*.pyc
