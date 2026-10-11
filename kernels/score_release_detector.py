@@ -1,5 +1,5 @@
 import os, sys, glob, json, time, subprocess
-subprocess.run([sys.executable, "-m", "pip", "install", "-q", "-U", "transformers>=4.57", "accelerate", "sentencepiece", "tiktoken"], check=False)
+subprocess.run([sys.executable, "-m", "pip", "install", "-q", "-U", "transformers>=5.5.0", "accelerate", "sentencepiece", "tiktoken"], check=False)
 import torch, transformers, numpy
 INP = os.path.dirname(glob.glob("/kaggle/input/**/rows.jsonl", recursive=True)[0])
 W = os.path.dirname(os.path.dirname(glob.glob("/kaggle/input/**/aina-kk-det/seed1/config.json", recursive=True)[0]))

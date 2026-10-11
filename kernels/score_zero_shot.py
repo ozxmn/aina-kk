@@ -1,5 +1,5 @@
 import os, sys, json, glob, time, math, random, subprocess
-subprocess.run([sys.executable, "-m", "pip", "install", "-q", "-U", "transformers>=4.57", "accelerate"], check=False)
+subprocess.run([sys.executable, "-m", "pip", "install", "-q", "-U", "transformers>=5.5.0", "accelerate"], check=False)
 import torch, torch.nn.functional as F
 from transformers import AutoTokenizer, AutoModelForCausalLM, AutoModelForSequenceClassification, get_linear_schedule_with_warmup
 INP = os.path.dirname(glob.glob("/kaggle/input/**/eval.jsonl", recursive=True)[0]); OUT = "/kaggle/working"

@@ -1,5 +1,5 @@
 import os, sys, json, glob, time, math, random, subprocess
-subprocess.run([sys.executable, "-m", "pip", "install", "-q", "-U", "transformers>=4.57", "accelerate", "sentencepiece", "tiktoken"], check=False)
+subprocess.run([sys.executable, "-m", "pip", "install", "-q", "-U", "transformers>=5.5.0", "accelerate", "sentencepiece", "tiktoken"], check=False)
 import torch, torch.nn.functional as F
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, get_linear_schedule_with_warmup
 PART = "__PART__"

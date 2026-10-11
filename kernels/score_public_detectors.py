@@ -1,5 +1,5 @@
 import os, sys, json, glob, time, subprocess
-subprocess.run([sys.executable, "-m", "pip", "install", "-q", "-U", "transformers>=4.57", "accelerate", "sentencepiece", "tiktoken"], check=False)
+subprocess.run([sys.executable, "-m", "pip", "install", "-q", "-U", "transformers>=5.5.0", "accelerate", "sentencepiece", "tiktoken"], check=False)
 import torch, torch.nn as nn
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, AutoConfig, AutoModel, PreTrainedModel
 INP = os.path.dirname(glob.glob("/kaggle/input/**/eval.jsonl", recursive=True)[0]); OUT = "/kaggle/working"

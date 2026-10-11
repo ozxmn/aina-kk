@@ -37,6 +37,19 @@ python3 scripts/calibrate_release.py scores/release_model/release_scores.jsonl s
 
 The dataset's `scores/release_model/` folder holds the scores of the released model, so this step can be rerun without a GPU.
 
+## Changes
+
+- v1.2 (11 Oct 2026): `scripts/extra_analysis.py` (the released length rule applied to every input, all 44 stored zero-shot statistics, exact and threshold-inclusive intervals for the Kazakh-built subsets, McNemar tests), `scripts/dev_replication_deployed.py` (the development-only replication with the length rule), and `scripts/build_results_extra.py` (writes `paper/results_extra.json`, `paper/results_extra.tex` and the appendix Tables 8-9). `scripts/render_paper.py` now reads `paper/results_extra.json` for the length-rule rows of Tables 4 and 7. Order after `analyze_det.py` and `build_results.py`:
+
+```
+python3 scripts/extra_analysis.py scores/finetuned_A scores/finetuned_K scores/zero_shot results/extra.json
+python3 scripts/dev_replication_deployed.py scores/finetuned_A scores/finetuned_K scores/zero_shot
+python3 scripts/build_results_extra.py results/extra.json results/dev_replication_v2.json scores/release_model/rates.json paper results/results.json audit
+python3 scripts/render_paper.py
+```
+
+- v1.1 (11 Oct 2026): training part `K` (KazLLM and Sherkala added to the training generators), the development-only replication (`dev_replication.py`), threshold-inclusive intervals in `analyze_det.py`, gray-zone rates on test-split sources only, and a claim checker that runs on the released files. Wikipedia text is labelled CC BY-SA 3.0, the license of 2022 revisions. v1.0 is unchanged.
+
 ## Citation
 
 See `CITATION.cff`.
