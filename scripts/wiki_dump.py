@@ -42,7 +42,7 @@ with bz2.open(src, "rb") as f:
                     pid = el.findtext(ns + "id"); title = el.findtext(ns + "title")
                     res.append({"id": f"wiki-kk-{pid}", "group": f"wiki-kk-{pid}", "domain": "encyclopedic", "lang": "kk",
                                 "source": "kk.wikipedia dump 2022-05-01", "title": title, "revid": rev.findtext(ns + "id"),
-                                "rev_timestamp": rev.findtext(ns + "timestamp"), "license": "CC BY-SA 4.0", "text": t})
+                                "rev_timestamp": rev.findtext(ns + "timestamp"), "license": "CC BY-SA 3.0", "text": t})
         el.clear()
         if seen_pages % 50000 == 0: print("pages", seen_pages, "parsed", parsed, "kept", len(res), flush=True)
 rng.shuffle(res)

@@ -102,6 +102,12 @@ elif PART == "C":
     for seed in (1, 2, 3):
         run("auglen", INDIST, True, seed, lenaug=True)
         run("alllen", GENS, True, seed, lenaug=True)
+elif PART == "K":
+    KZ = [g for g in GENS if "KazLLM" in g or "Sherkala" in g]
+    for seed in (1, 2, 3):
+        run("kznoaug", INDIST + KZ, False, seed)
+        run("kz", INDIST + KZ, True, seed)
+        run("kzlen", INDIST + KZ, True, seed, lenaug=True)
 elif PART == "W":
     for seed in (1, 2, 3):
         run("auglen", INDIST, True, seed, lenaug=True, save=f"{OUT}/aina-kk-det/seed{seed}")

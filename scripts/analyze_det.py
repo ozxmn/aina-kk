@@ -32,14 +32,17 @@ H_te = sel(lambda r: r["label"] == "H" and r["variant"] == "orig" and r["split"]
 M_id = sel(lambda r: r["label"] == "M" and r["variant"] == "orig" and r["split"] == "test" and not r["heldout"])
 M_ho = sel(lambda r: r["label"] == "M" and r["variant"] == "orig" and r["heldout"] and r["src_split"] == "test")
 GENS = sorted({r["generator"] for r in E.values() if r["label"] == "M"})
+GRAY = {g: sel(lambda r, g=g: r["label"] == g and r["variant"] == "orig" and (g == "MT" or r["src_split"] == "test")) for g in ("HP", "MT", "MIX", "MH")}
 def _ecdf(t, ref):
     rv = np.sort(np.array([S[t][r["id"]] for r in ref if r["id"] in S[t]]))
     return {i: float(np.searchsorted(rv, x, side="right")) / len(rv) for i, x in S[t].items()}
+PARTS = {}
 for a in ("det_base", "det_aug", "det_auglen", "det_all", "det_alllen"):
     b = "zs:gemma4-e2b:binoculars"
     if a in S and b in S and H_dev:
         ma, mb = _ecdf(a, H_dev), _ecdf(b, H_dev)
         S[f"combo_{a[4:]}+bino"] = {i: max(ma[i], mb[i]) for i in ma if i in mb}
+        PARTS[f"combo_{a[4:]}+bino"] = (a, b)
 BINS = {"120-160": (0, 160), "160-220": (160, 220), "220-320": (220, 10**6)}
 def vals(t, rows): s = S[t]; return [s[r["id"]] for r in rows if r["id"] in s]
 def auc(t, pos, neg):
@@ -66,6 +69,23 @@ def boot_rate(t, rows, th, B=400, seed=0):
         v = rate(t, rs, th)
         if v is not None: out.append(v)
     return [float(np.percentile(out, 2.5)), float(np.percentile(out, 97.5))] if out else None
+def boot_thr(t, rows, cal_map=None, B=400, seed=0):
+    rng = random.Random(seed); dev = [r["id"] for r in H_dev]
+    g = defaultdict(list)
+    for r in rows: g[r["group"]].append(r["id"])
+    keys = list(g); out = []
+    for _ in range(B):
+        ds = [rng.choice(dev) for _ in dev]
+        ts = [x for k in (rng.choice(keys) for _ in keys) for x in g[k]]
+        if t in PARTS:
+            a, b = PARTS[t]
+            ra, rb = np.sort([S[a][i] for i in ds]), np.sort([S[b][i] for i in ds])
+            f = lambda ids: np.maximum(np.searchsorted(ra, [S[a][i] for i in ids], "right") / len(ra), np.searchsorted(rb, [S[b][i] for i in ids], "right") / len(rb))
+        else:
+            f = lambda ids: np.array([S[t][i] for i in ids])
+        th = float(np.quantile(f([cal_map[i] for i in ds] if cal_map else ds), 0.99))
+        out.append(float(np.mean(f(ts) >= th)))
+    return [float(np.percentile(out, 2.5)), float(np.percentile(out, 97.5))]
 def boot_auc(t, pos, neg, B=300, seed=0):
     rng = random.Random(seed); g = defaultdict(list)
     for r in pos: g[r["group"]].append((r, 1))
@@ -90,9 +110,11 @@ for t in sorted(S):
         e[f"fpr@{name}"] = rate(t, H_te, x); e[f"tpr@{name}"] = rate(t, M_id, x); e[f"tpr_heldout@{name}"] = rate(t, M_ho, x)
         e[f"fpr_by_domain@{name}"] = {d: rate(t, [r for r in H_te if r["domain"] == d], x) for d in sorted({r["domain"] for r in H_te})}
         e[f"fpr_by_len@{name}"] = {b: rate(t, [r for r in H_te if lo <= r["n_words"] < hi], x) for b, (lo, hi) in BINS.items()}
-        e[f"flag_gray@{name}"] = {g: rate(t, sel(lambda r, g=g: r["label"] == g and r["variant"] == "orig"), x) for g in ("HP", "MT", "MIX", "MH")}
+        e[f"flag_gray@{name}"] = {g: rate(t, GRAY[g], x) for g in ("HP", "MT", "MIX", "MH")}
         e[f"flag_by_gen@{name}"] = {g: rate(t, [r for r in M_id + M_ho if r["generator"] == g], x) for g in GENS}
     e["fpr@dev_ci"] = boot_rate(t, H_te, th) if th is not None else None
+    if t.startswith(("det_", "combo_")) and not t.startswith("det_logo"):
+        e["fpr@dev_ci_thr"] = boot_thr(t, H_te)
     if Hcal:
         ths = {b: thr(t, [r for r in Hcal if lo <= r["n_words"] < hi]) for b, (lo, hi) in BINS.items()}
         e["thr_lenaware"] = ths
@@ -120,6 +142,9 @@ for t in sorted(S):
             thn = thr(t, Hd); sh[n]["thr_devlen"] = thn
             sh[n]["fpr@devlen"] = rate(t, Ht, thn); sh[n]["tpr@devlen"] = rate(t, Mt, thn)
             sh[n]["fpr@devlen_ci"] = boot_rate(t, Ht, thn)
+            if t.startswith(("det_", "combo_")) and not t.startswith("det_logo"):
+                cm = {r["base_id"]: r["id"] for r in Hd}
+                sh[n]["fpr@devlen_ci_thr"] = boot_thr(t, Ht, cal_map=cm)
     e["short"] = sh
     e["auroc_len120_220"] = auc(t, [r for r in M_id if 120 <= r["n_words"] < 220], [r for r in H_te if 120 <= r["n_words"] < 220])
     if t.startswith("det_") and len(SEED.get(t, {})) > 1:
